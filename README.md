@@ -1,16 +1,5 @@
 # DevOps Tech Test
 
-## Preperation
-
-Please Clone this repository and push it up to your own github repository.
-Do **not** fork this repository
-
-## Challenge
-
-The following use case might be a real-life example from one of our customers, please deliver your best possible solution. Please go through the described scenario and write a script, in one of the below languages, implementing a fix to the issue below.
-
-For the development of the scripts you have 4 hours and are allowed to use Google and any other material as long as the work submitted was written by you.
-
 ### Use Case
 
 - A database upgrade requires the execution of numbered SQL scripts stored in a specified folder, named such as `045.createtable.sql`
@@ -26,35 +15,18 @@ For the development of the scripts you have 4 hours and are allowed to use Googl
   - `./db-upgrade.your-lang directory-with-sql-scripts username-for-the-db db-host db-name db-password`
   - Example (bash): `./db-upgrade.sh dbscripts myUser myDbServer techTestDB SuperSecretPassword1!`
 
-### Requirements
+## Solution
 
-- Supported Languages (No other languages will be accepted):
-  - Bash
-  - Python 3
-  - Ruby 2.7
-  - Powershell 7
-- You will have to use a MySQL 8.0 database
+The solution to the above use case is represented mainly by the db_upgrade.py which can be found in the submissionscript dir.
+Check the comments in the script for explanations on how it works.
+The development of the script was around 3 hours. Extra time was spent for the automation part, adding comments and prints and updating the README.
 
-How would you implement this in order to create an automated solution to the above requirements?
+### Automation
 
-## Submission
+The script is part of crontab and will run automatically on the exec_container at every 5th minute.
+You can also manually run the script but after it was run by cron it will print the following message: `No need for upgrade, DB is currently at the latest version!`
 
-Please send us:
-
-- a link to your github repository
-- any associated notes for our review
-
-We will come back to you asap regarding next steps.
-
-We are looking forward to your submission.
-
-## Environment Setup
-
-### Adding your solution
-
-Add you submission to the `submissionsscript` directory.
-
-This will make the script available within the container due to a volume mount within `docker-compose.yml`
+## Environment Setup & Testing
 
 ### Running the containers
 
@@ -69,41 +41,34 @@ This will create two containers called:
 - exec_container
 - mysql_container
 
-Required language dependencies are installed in the `exec_container`, your solution should be invoked on the `exec_container`.
-
-### Adding script dependencies
-
-Any other dependencies you require to complete the tech test should be added to the `entrypoint.sh` file in the root directory of the repository.
-
-e.g. `pip3 install mysql-client`
-
-This ensures they are automatically installed when the container is run. Once dependencies have been added to the file you must restart the environment for them to take effect.
-
-```sh
-docker compose restart -d
-```
-
-**do not delete** `sleep infinity` leave this as the last command in `entrypoint.sh`
-
-### Testing your script
-
-Once you're ready to test you script you can connect to the `exec_container`. Due to the volume mount mentioned in [adding your solution](#adding-your-solution) it will already be available within the `exec-container`.
+### Testing the script
+Commands to be followed:
 
 ```sh
 docker exec -it exec_container /bin/bash
 ```
 
-Run your script using
+Run the script using
 
 ```sh
-/submissionscript/<yourscript.lang> /scripts/ dev mysql_container devopstt 123456`
+python3 /submissionscript/db_upgrade.py /scripts/ dev mysql_container devopstt 123456
 ```
 
-You can then run the automated test to check if successful
+You can then run the test script to check if successful
 
 ``` sh
 pytest /scripts/db_test.py
 ```
+
+You can also check the DB to see if all the SQL scripts were executed. Enter the DB password after the below command.
+Once you've done that you can execute SQL against the DB e.g. SELECT * FROM someTable . 
+``` sh
+mysql -u dev -h mysql_container -p devopstt
+```
+
+Also check the /scripts/expecteddbstate/versionTable.json file to check if the DB version there was updated too.
+
+Even if the script was ran by cron you can create a new file in the /scripts/ dir and rerun the db_upgrade script. Be advised that in this case the new file should contain a bigger number than the current DB version otherwise it won't be executed. Also, if the file does not contain .sql it won't be executed.
 
 ## Database credentials
 
