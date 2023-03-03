@@ -6,7 +6,7 @@ apt-get update && apt-get install -y \
 sudo \
 vim \
 cron
-crontab -l | { cat; echo "*/5 * * * * python3 /submissionscript/db_preupgrade.py /scripts/ dev mysql_container devopstt 123456"; } | crontab -
+crontab -l | { cat; echo "*/5 * * * * python3 /submissionscript/db_upgrade.py /scripts/ dev mysql_container devopstt 123456"; } | crontab -
 service cron start
 
 sleep infinity
