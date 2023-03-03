@@ -23,7 +23,7 @@ def get_files_and_versions():
     versions_and_files = {}
 
     for file_name in list_of_files:
-        if "sql" in file_name:
+        if ".sql" in file_name:
             version_number = re.findall(r'\d+', file_name) # used regex to extract the version number at the start of the file
             if len(version_number) != 0:
                 versions_and_files[int(version_number[0].lstrip('0'))] = sys.argv[1] + file_name # build the Dict - e.g. {45: '45filename.sql'}
@@ -39,19 +39,18 @@ def get_current_db_version():
 
 # check if there are any scripts that need to be run and execute them + update the DB version entry with the latest version
 def run_upgrade_scripts(current_scripts: Dict, db_current_version: str):
-    # loop through the files dict and compare the keys (versions) to the actual DB version; execute all scripts that match the conditions
-    for key in current_scripts:
-        if key > db_current_version:
-            with open(current_scripts[key], 'r') as f:
-                db_cursor.execute(f.read())
-                db_connection.commit()
-                print("Upgrade script executed: " + current_scripts[key])
-
-    # get the last key (representing the latest DB version)
+    # get the last key (representing the latest DB version) and 
     latest_version = list(current_scripts)[-1]
     if latest_version <= db_current_version:
         print("No need for upgrade, DB is currently at the latest version!")
     else: 
+        # loop through the files dict and compare the keys (versions) to the actual DB version; execute all scripts that match the conditions
+        for key in current_scripts:
+            if key > db_current_version:
+                with open(current_scripts[key], 'r') as f:
+                    db_cursor.execute(f.read())
+                    db_connection.commit()
+                    print("Upgrade script executed: " + current_scripts[key])
         print(f"DB will be upgraded to version {latest_version}!")
 
         # update the DB version in the table
