@@ -1,0 +1,1 @@
+INSERT INTO appTable VALUES(2, "script succeded");
